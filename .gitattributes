@@ -1,0 +1,6 @@
+# Autodetect text files
+* text=auto eol=lf
+
+# Override Windows stuff
+*.cmd eol=crlf
+*.bat eol=crlf
