@@ -1,7 +1,9 @@
 import BleManager from 'react-native-ble-manager';
 import { DeviceManager } from './services/device-manager.service';
 import { GenericDevice } from './devices/generic.device';
+import auth from '@react-native-firebase/auth';
 import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
+import { refreshFcmToken } from './utils';
 
 enum AttackerType {
   DRONE = 'DRONE',
@@ -18,7 +20,11 @@ interface PushNotificationData {
 export const backgroundTask = async (
   remoteMessage: FirebaseMessagingTypes.RemoteMessage,
 ) => {
-  console.log('Message handled in the background!', remoteMessage);
+  console.log('Background task started handling the message', remoteMessage);
+  if (!auth().currentUser) {
+    console.log('currentUser is undefined. Calling refreshFcmToken() async');
+    refreshFcmToken().catch((e) => console.error(e));
+  }
   try {
     await BleManager.start({ showAlert: false });
     const deviceInfo = await DeviceManager.loadDeviceInfo();

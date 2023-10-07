@@ -7,7 +7,6 @@ import messaging from '@react-native-firebase/messaging';
 import { backgroundTask } from './background';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { StateProvider, initialState, reducer } from './contexts/global';
-//import OldApp from './OldApp';
 
 export default function Main() {
   return (
@@ -24,12 +23,10 @@ export default function Main() {
 }
 
 export const main = () => {
-  messaging()
-    .subscribeToTopic('raidalerts')
-    .then(() => console.log('Subscribed to topic!'));
-
-  // Register background handler
+  console.log('Started main()');
   messaging().setBackgroundMessageHandler(backgroundTask);
-
+  console.log('Background message handler is set');
+  console.log('Register UI components');
   AppRegistry.registerComponent(appName, () => Main);
+  console.log('Done UI components registration');
 };

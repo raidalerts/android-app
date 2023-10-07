@@ -4,11 +4,13 @@ import ConnectedDevice from './components/connected-device.component';
 import { AppService } from './services/app.service';
 import { BluetoothService } from './services/bt.service';
 import BleManager from 'react-native-ble-manager';
+import { refreshFcmToken } from './utils';
 
 export default function App() {
   useEffect(() => {
     async function doEffect() {
       await AppService.requestPermissions();
+      await refreshFcmToken();
       await BluetoothService.requestPermissions();
       await BleManager.start({ showAlert: false });
     }
