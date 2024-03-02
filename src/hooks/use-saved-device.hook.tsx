@@ -20,18 +20,34 @@ export const useSavedDevice = () => {
   };
 
   const forgetDevice = () => {
-    if (device) {
-      device.disconnect().catch((e) => console.error(e));
-      setDevice(null);
-    }
+    (async () => {
+      if (device) {
+        await device.disconnect();
+        await DeviceManager.clearDeviceInfo();
+        setDevice(null);
+      }
+    })()
+      .then(() => {
+        // do nothing
+      })
+      .catch((e) => {
+        console.error(e);
+      });
   };
 
-  const saveDevice = (btDevice: Device) => {
+  const saveDevice = (btDevice: Device, showLoading = true) => {
     DeviceManager.storeDeviceInfo(btDevice.toDeviceDto())
       .then(() => {
-        setLoading(true);
+        setLoading(showLoading);
       })
       .catch((e) => console.error(e));
+  };
+
+  const setDeviceMuted = (muted: boolean) => {
+    if (device) {
+      device.setMuted(muted);
+      saveDevice(device);
+    }
   };
 
   useEffect(() => {
@@ -39,17 +55,19 @@ export const useSavedDevice = () => {
       const result = await DeviceManager.loadDeviceInfo();
       if (result) {
         const btDevice = GenericDevice.fromDeviceDto(result);
+        await btDevice.connect();
         loaded(btDevice);
       } else {
         failLoading();
       }
     }
     if (loading) {
-      doEffect().catch(() => {
+      doEffect().catch((e) => {
+        console.error(e);
         failLoading();
       });
     }
   }, [loading]);
 
-  return { loading, error, device, forgetDevice, saveDevice };
+  return { loading, error, device, forgetDevice, saveDevice, setDeviceMuted };
 };

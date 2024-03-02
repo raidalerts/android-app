@@ -29,7 +29,7 @@ export const backgroundTask = async (
     await BleManager.start({ showAlert: false });
     const deviceInfo = await DeviceManager.loadDeviceInfo();
 
-    if (deviceInfo) {
+    if (deviceInfo && !deviceInfo.muted) {
       const device = GenericDevice.fromDeviceDto(deviceInfo);
       await device.connect();
       if (remoteMessage.data) {

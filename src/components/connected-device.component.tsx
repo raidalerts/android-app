@@ -13,7 +13,8 @@ export default function ConnectedDevice() {
   const [visible, setVisible] = useState(false);
   const openMenu = () => setVisible(true);
   const closeMenu = () => setVisible(false);
-  const { loading, device, forgetDevice, saveDevice } = useSavedDevice();
+  const { loading, device, forgetDevice, saveDevice, setDeviceMuted } =
+    useSavedDevice();
 
   return (
     <List.Section>
@@ -40,7 +41,7 @@ export default function ConnectedDevice() {
             >
               <Menu.Item
                 onPress={() => {
-                  device.setMuted(!device.isMuted);
+                  setDeviceMuted(!device.isMuted);
                 }}
                 title={
                   device.isMuted
@@ -48,9 +49,7 @@ export default function ConnectedDevice() {
                     : 'Disable notifications'
                 }
                 leadingIcon={
-                  device.isMuted
-                    ? 'notifications-muted'
-                    : 'notifications-active'
+                  device.isMuted ? 'notifications-off' : 'notifications-active'
                 }
               />
               <Menu.Item

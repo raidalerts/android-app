@@ -11,6 +11,10 @@ export class DeviceManager {
     );
   }
 
+  static async clearDeviceInfo() {
+    await AsyncStorage.removeItem(BLE_DEVICE_STORAGE_KEY);
+  }
+
   static async loadDeviceInfo(): Promise<DeviceDto | null> {
     const result = await AsyncStorage.getItem(BLE_DEVICE_STORAGE_KEY);
     if (result) {
