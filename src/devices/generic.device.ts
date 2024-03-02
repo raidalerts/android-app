@@ -1,6 +1,5 @@
 import BleManager from 'react-native-ble-manager';
 import { Device, DeviceDto } from './device.interface';
-import { sleep } from '../utils';
 import { Buffer } from 'buffer';
 
 const SLEEP_AFTER_CONNECT_MS = 900;
@@ -9,7 +8,16 @@ const ALERT_NOTIFICATION_SERVICE_ID = '1811';
 const NEW_ALERT_NOTIFICATION_CHARACTERISTIC =
   '00002a46-0000-1000-8000-00805f9b34fb';
 
+const MAX_MESSAGE_LENGTH = 23;
+const INCOMING_CALL_NOTIFICATION_TYPE = 0x03;
+const SMS_NOTIFICATION_TYPE = 0x05;
+const HEADER_DELIMITER = 0x01;
+
 const resolveUUID = (serviceId: string) => BASE_UUID.replace('%s', serviceId);
+
+export const sleep = (ms: number) => {
+  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+};
 
 export class GenericDevice implements Device {
   private connected = false;
@@ -21,9 +29,13 @@ export class GenericDevice implements Device {
   ) {}
 
   async connect(): Promise<void> {
+    await BleManager.start({ showAlert: false });
     await BleManager.connect(this._id);
+    console.log('Connected to', this._id);
     await sleep(SLEEP_AFTER_CONNECT_MS);
+    console.log('Retrieving services for', this._id);
     await BleManager.retrieveServices(this._id);
+    console.log('Retrieved services for', this._id);
     this.connected = true;
   }
 
@@ -58,20 +70,32 @@ export class GenericDevice implements Device {
     await this.connect();
   }
 
-  async sendSMSNotification(senderName: string, force = false): Promise<void> {
+  async sendSMSNotification(
+    senderName: string,
+    text = ' ',
+    force = false,
+  ): Promise<void> {
     await this._ensureConnected();
     if (this.muted && !force) {
       return;
     }
     const senderBytes = Buffer.from(senderName).toJSON().data;
-    const headerBytes = [0x05, 0x01];
-    const message = [...headerBytes, ...senderBytes];
+    const headerBytes = [SMS_NOTIFICATION_TYPE, HEADER_DELIMITER];
+    const textBytes = Buffer.from(
+      text.slice(
+        0,
+        MAX_MESSAGE_LENGTH - headerBytes.length - senderBytes.length - 4,
+      ),
+    ).toJSON().data;
+    // TODO: implement sending by chunks
+    const message = [...headerBytes, ...senderBytes, 0x0, ...textBytes];
     await BleManager.write(
       this._id,
       resolveUUID(ALERT_NOTIFICATION_SERVICE_ID),
       NEW_ALERT_NOTIFICATION_CHARACTERISTIC,
       message,
     );
+    console.log('Sent SMS notification to', this._id);
   }
 
   async sendIncomingCallNotification(
@@ -83,7 +107,7 @@ export class GenericDevice implements Device {
       return;
     }
     const senderBytes = Buffer.from(senderName).toJSON().data;
-    const headerBytes = [0x03, 0x01];
+    const headerBytes = [INCOMING_CALL_NOTIFICATION_TYPE, HEADER_DELIMITER];
     const message = [...headerBytes, ...senderBytes];
     await BleManager.write(
       this._id,
@@ -91,6 +115,7 @@ export class GenericDevice implements Device {
       NEW_ALERT_NOTIFICATION_CHARACTERISTIC,
       message,
     );
+    console.log('Sent incoming call notification to', this._id);
   }
 
   toDeviceDto(): DeviceDto {

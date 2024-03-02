@@ -13,7 +13,11 @@ export interface Device {
   setMuted(muted: boolean): void;
   connect(): Promise<void>;
   disconnect(): Promise<void>;
-  sendSMSNotification(senderName: string, force: boolean): Promise<void>;
+  sendSMSNotification(
+    senderName: string,
+    text: string,
+    force: boolean,
+  ): Promise<void>;
   sendIncomingCallNotification(
     senderName: string,
     force: boolean,

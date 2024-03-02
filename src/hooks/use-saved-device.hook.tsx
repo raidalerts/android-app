@@ -53,8 +53,10 @@ export const useSavedDevice = () => {
   useEffect(() => {
     async function doEffect() {
       const result = await DeviceManager.loadDeviceInfo();
+      console.log('Loaded device info', result);
       if (result) {
         const btDevice = GenericDevice.fromDeviceDto(result);
+        console.log('Connecting to device', btDevice);
         await btDevice.connect();
         loaded(btDevice);
       } else {

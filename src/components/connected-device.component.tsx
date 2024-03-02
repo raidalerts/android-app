@@ -29,7 +29,7 @@ export default function ConnectedDevice() {
           description={device.id}
           left={() => <List.Icon icon="bluetooth" />}
           onLongPress={() => {
-            device.sendSMSNotification('⚡Alert', true);
+            device.sendSMSNotification('⚡Alert', 'text test', true);
           }}
           right={() => (
             <Menu
