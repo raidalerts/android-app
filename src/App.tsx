@@ -9,7 +9,9 @@ import { refreshFcmToken, handleIncomingFcmMessage } from './utils';
 
 export default function App() {
   useEffect(() => {
-    let unsubscribe = () => {};
+    let unsubscribe = () => {
+      /* do nothing */
+    };
     async function doEffect() {
       await AppService.requestPermissions();
       await refreshFcmToken();
